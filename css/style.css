@@ -40,11 +40,15 @@ nav ul{
   border: none;
   background-color:#272343;
 }
+.btn:hover {
+  color: #fff;
+}
+
 
 .modal-style{
   border: none;
   box-shadow: 0 19px 38px rgba(0, 0, 0, 0.30), 0 15px 12px rgba(0, 0, 0, 0.22);
-  background: linear-gradient(#EB7070, #FFD782);
+  /* background: linear-gradient(#EB7070, #FFD782); */
 }
 
 .card {
@@ -81,7 +85,7 @@ nav ul{
   );
   --hex-transition: all .2s ease;
   /* Colors */
-  --color-hex-default: #000000;
+  --color-hex-default: #272343;
   --color-hex-hover: #FFFFFF;
 }
 
