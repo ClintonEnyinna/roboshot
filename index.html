@@ -93,7 +93,7 @@
                         </div>
                         <div class="form-group">
                             <label for="drink-description">Descripcion</label>
-                            <textarea rows="4" class="form-control" id="drink-description" placeholder="" required></textarea>
+                            <textarea rows="2" class="form-control" id="drink-description" placeholder="" required></textarea>
                         </div>
                         <div class="form-group">
                             <input type="button" class="upload-image" value="Upload Image">
@@ -102,16 +102,26 @@
                         <div class="form-group">
                             <label for="ingredients" class="col-form-label">Ingredientes:</label>
                             <!-- Default inline 1-->
-                            <div class="checkboxes" data-bind="foreach: ingredients">
-                                <label>
-                                    <input data-bind="value: name, checked:$parent.checkBoxId" type="checkbox">
-                                    <span data-bind="text: name"></span>
-                                </label>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <div class="row input-fields" data-bind="foreach: ingredients">
+                                <div class="col-6" >
+                                    <div data-bind="text: name"></div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="field pb-2">
+                                        <span class="input-number-decrement">–</span><input class="ing-list" type="text" data-bind="attr: { id: $data.name }"><span class="input-number-increment">+</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div data-bind="foreach: $root.checkBoxId">
+                            <!-- <div class="checkboxes" data-bind="foreach: ingredients">
+                                <label>
+                                    <input data-bind="value: name, checked:$parent.ingList" type="checkbox">
+                                    <span data-bind="text: name"></span>
+                                </label>
+                            </div>
+                            <div data-bind="foreach: $root.ingList">
                                 <span data-bind="text: $data"></span>
                                 <br />
-                            </div>
+                            </div> -->
                         </div>
                         <div class="form-group">
                             <label for="drink-name">Precio</label>
@@ -147,8 +157,8 @@
                             <tr>
                                 <th scope="col">Pos</th>
                                 <th scope="col">Botella</th>
-                                <th>Precio/10ml ($)</th>
-                                <th scope="col">Cantidad (mL)</th>
+                                <th>Precio/10ml&nbsp;($)</th>
+                                <th scope="col">Cantidad&nbsp;(mL)</th>
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: ingredients">

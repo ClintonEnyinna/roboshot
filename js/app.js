@@ -7,7 +7,7 @@ const authenticate = require('password-hash'),
     app = remote.app,
     ipc = electron.ipcRenderer,
     serialPort = require('serialport');
-    Readline = require('@serialport/parser-readline');
+Readline = require('@serialport/parser-readline');
 
 let folderName = path.join(app.getPath('userData'), 'roboshotData'),
     ingdFile = path.join(folderName, 'ingredientes.txt'),
@@ -171,7 +171,7 @@ function AppViewModel() {
         this.hexagon.push(new hex(i))
     }
 
-    this.checkBoxId = [];
+    this.ingList = [];
 
     ko.track(this);
 }
@@ -316,7 +316,8 @@ window.addEventListener('DOMContentLoaded', function(event) {
         }
     });
 
-    $('#newRecipe').on('hidden.bs.modal', function(){
+    //clears modal content on close
+    $('#newRecipe').on('hidden.bs.modal', function() {
         $(this).find('form').trigger('reset');
     });
 
@@ -340,8 +341,40 @@ window.addEventListener('DOMContentLoaded', function(event) {
     });
 
     $('#add').on('click', _ => {
-        ingds = viewModel.checkBoxId.join(", ");
+        ingds = [];
+
+        $('.ing-list').each(function(index, value) {
+            if (this.value != "") {
+                ingds.push(this.id)
+            }
+        });
+        ingds = ingds.join(", ");
     });
+
+    $(".input-fields").on("click",  '.input-number-increment', function(){
+        var el = $(this).prev();
+        increment(el)
+    });
+
+    $(".input-fields").on("click",  '.input-number-decrement', function(){
+        var el = $(this).next();
+        decrement(el)
+    });
+
+    function decrement(el) {
+        var value = el.val();
+        value = Number(value) - 10;
+        if (value <= 0) {
+            value = "";
+        }
+        el.val(value);
+    }
+
+    function increment(el) {
+        var value = el.val();
+        value = Number(value) + 10;
+        el.val(value);
+    }
 
     fs.readFile(cardFile, (err, data) => {
         if (err) {
