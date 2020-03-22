@@ -1,0 +1,91 @@
+body {
+  display: flex;
+  margin: 0;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+main {
+  min-height: 100vh;
+  border-right: 4px solid #f5f5f5;
+  flex-basis: 40%;
+}
+
+aside {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 60%;
+}
+
+.ad-video {
+  height: 60%;
+}
+
+.ad-video video {
+  width: 100%;
+  height: 100%;
+}
+
+.drinks {
+  display: flex;
+  justify-content: space-around;
+  height: 40%;
+}
+
+.order-list{
+  margin: 10px auto;
+  width: 95%;
+  border: 1px solid rgba(26,54,126,.125);
+  border-radius: 8px;
+  box-shadow: 0 3px 13px -2px rgba(0,0,0,.1);
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  padding: 0;
+  margin: 0;
+}
+
+.tableTitle {
+  color: #555e77;
+  font-weight: 700;
+  text-align: left;
+  border-bottom: 1px solid rgba(26,54,126,.125);
+  padding: 20px;
+  font-size: 20px;
+  margin: 0;
+}
+
+th {
+  color: #495057;
+  font-weight: 700;
+  font-size: 18px;
+  text-align: left;
+  padding: 15px;
+  /* width: 25%; */
+}
+
+td {
+  text-align: left;
+  padding: 8px 0 8px 15px;
+}
+
+tbody tr {
+  color: #495057;
+  font-size: 18px;
+}
+
+tbody tr:nth-child(odd) {
+  background-image: linear-gradient(to right, rgb(58, 184, 58),#a4e7a4);
+}
+
+img {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+td img {
+  width: 38px;
+  height: 38px;
+}

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>RoboShot</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-light mb-5 rounded">
+        <div class="container">
+            <a class="navbar-brand">
+                <img class="logo" src="img/roboshot-logo-1.png" alt="">
+            </a>
+            <ul class="nav justify-content-end">
+                <li class="nav-item mx-2 dropdown">
+                    <a class="nav-link" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <img class="icon" src="img/calendar.svg" alt="">
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <button id="logInOut" class="dropdown-item custom" data-toggle="modal" data-target-custom="#login">
+                            Log In!
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <!-- Button trigger modal -->
+                        <button class="dropdown-item admin" data-toggle="modal" data-target="#ventas" disabled>
+                            Ventas
+                        </button>
+                    </div>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <img class="icon" src="img/settings.svg" alt="">
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <button class="dropdown-item">Abastecer</button>
+                        <button class="dropdown-item" data-toggle="modal" data-target="#ingredients">
+                            Ingredientes
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <!-- Button trigger modal -->
+                        <button class="dropdown-item" data-toggle="modal" data-target="#newRecipe">
+                            Nueva Receta
+                        </button>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row" data-bind="foreach: cards">
+            <div class="col-sm-4 my-sm-2">
+                <div id="card" class="card mb-4 mb-sm-1">
+                    <img class="card-img-top" data-bind="attr: {src: image}" style="max-height: 400px;" src="" alt="Card image cap">
+                    <div class="card-body">
+                        <h5 class="card-title" data-bind="text: name"></h5>
+                        <span class="price" data-bind="text: '$' + price"></span>
+                        <p class="card-text text-muted" data-bind="text: ingredients"></p>
+                        <div class=text-center>
+                            <button class="btn pedir" data-bind="click: $parent.drinkOrdered">Pedir</button>
+                            <span class="mx-2 deleteBtn" data-bind="click: $parent.removeCard">
+                                <img class="icon-trash" src="img/trash-alt-solid.svg" alt="">
+                            </span>
+                        </div>
+                    </div>
+                    <a href="#" data-toggle="modal" data-target="#seeMore" data-bind="attr: { id: $index }" class="details d-flex justify-content-end pr-2 stretched-link text-secondary"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 1 newRecipe-->
+    <div class="modal fade" id="newRecipe" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="">Receta</h5>
+                    <button class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="drink-name">Bebida</label>
+                            <input type="text" class="form-control" id="drink-name" placeholder="Mojito" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="drink-description">Descripcion</label>
+                            <textarea rows="4" class="form-control" id="drink-description" placeholder="" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <input type="button" class="upload-image" value="Upload Image">
+                            <span class="image-name"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="ingredients" class="col-form-label">Ingredientes:</label>
+                            <!-- Default inline 1-->
+                            <div class="checkboxes" data-bind="foreach: ingredients">
+                                <label>
+                                    <input data-bind="value: name, checked:$parent.checkBoxId" type="checkbox">
+                                    <span data-bind="text: name"></span>
+                                </label>&nbsp;&nbsp;&nbsp;&nbsp;
+                            </div>
+                            <div data-bind="foreach: $root.checkBoxId">
+                                <span data-bind="text: $data"></span>
+                                <br />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="drink-name">Precio</label>
+                            <input type="text" class="form-control" id="drink-price" placeholder="$" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <!-- <button class="btn btn-secondary" data-dismiss="modal">Close</button> -->
+                    <button class="btn infoBtn" data-bind="click: addCard" data-dismiss="modal" id="add">Agregar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2 ingredients-->
+    <div class="modal fade" id="ingredients" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content modal-style">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="">Ingredientes</h5>
+                    <button class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="hexagon-container" data-bind="foreach: hexagon">
+                        <div class="hexagon" data-bind="text: num" data-toggle="modal" data-target="#inputModal">
+                        </div>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Pos</th>
+                                <th scope="col">Botella</th>
+                                <th>Precio/10ml ($)</th>
+                                <th scope="col">Cantidad (mL)</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: ingredients">
+                            <tr>
+                                <td scope="row" data-bind="text: pos"></td>
+                                <td data-bind="text: name"></td>
+                                <td data-bind="text: price"></td>
+                                <td data-bind="text: level"></td>
+                                <td data-bind="click: $parent.removeBottle" class="deleteBtn"><img class="icon-trash" src="img/trash-alt-solid.svg" alt=""></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3 ingrediente-->
+    <div class="modal fade" id="inputModal" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document" style="width: 300px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="">Ingrediente</h5>
+                    <button class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="ingdName" placeholder="Botella">
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" id="unit-price" placeholder="Precio Unitario (10mL)"></input>
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" id="quantity" placeholder="Cantidad de Botella (mL)"></input>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn infoBtn" data-bind="click: addBottle" data-dismiss="modal" id="add">Agregar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 4 login-->
+    <div class="modal fade" id="login" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="">Admin</h5>
+                    <button class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <input type="password" class="form-control" id="password" value="" placeholder="contraseña"></input>
+                        </div>
+                    </form>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" id="loginBtn">Log In</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 5 ventas-->
+    <div class="modal fade" id="ventas" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="">Ventas</h5>
+                    <button class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-borderless">
+                        <thead>
+                            <tr>
+                                <th scope="col">Bebida</th>
+                                <th scope="col">Cantidad (vasos)</th>
+                                <th scope="col">Total ($)</th>
+                                <th scope="col">Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: sales">
+                            <tr>
+                                <td scope="row" data-bind="text: name">
+                                    </th>
+                                    <td data-bind="text: quantity"></td>
+                                    <td data-bind="text: price"></td>
+                                    <td data-bind="text: date"></td>
+                                    <td data-bind="click: $parent.removeBottle" class="deleteBtn"><img class="icon-trash" src="img/trash-alt-solid.svg" alt=""></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="2">Total ($) :</th>
+                                <td data-bind="text: grandTotal"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div class="modal-footer">
+                        <button class="btn infoBtn" data-dismiss="modal" id="">Generar Reportes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 6 seeMore-->
+    <div class="modal fade" id="seeMore" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-dark" id="">Info</h5>
+                    <button class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <div class="row no-gutters">
+                            <div class="col-md-4">
+                                <img style="width: 100%; max-height: 500px;" src="" class="card-img show-image" alt="">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title see-more-title"></h5>
+                                    <p class="card-text see-more-description"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/knockout-3.5.0.js"></script>
+    <script src="js/knockout-es5.min.js"></script>
+    <script>
+        let $ = require('jquery');
+        require('popper.js');
+        require('bootstrap');
+        require('./js/app.js')
+
+        //to enable scrolling after using two modals
+        $('.modal').on("hidden.bs.modal", function(e) { //fire on closing modal box
+            if ($('.modal:visible').length) { // check whether parent modal is opened after child modal close
+                $('body').addClass('modal-open'); // if open mean length is 1 then add a bootstrap css class to body of the page
+            }
+        });
+    </script>
+</body>
+
+</html>

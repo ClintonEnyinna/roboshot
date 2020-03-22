@@ -1,0 +1,154 @@
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  min-height: 100vh;
+  /* background-image: url('../img/roboshot-bg.jpg'); */
+}
+
+nav ul{
+	list-style: none;
+	display: flex;
+}
+
+.price {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: rgba(255, 255, 255, 0.726);
+  font-size: large;
+}
+
+.pedir {
+  width: 100px;
+  color: white;
+  font-size: 20px;
+  font-weight: 500;
+  border: none;
+  border-radius: 20px;
+  background: #272343;
+  position: relative;
+  z-index: 2;
+}
+
+.infoBtn{
+  margin: 0 auto;
+  color: white;
+  font-size: 20px;
+  font-weight: 500;
+  border: none;
+  background-color:#272343;
+}
+
+.modal-style{
+  border: none;
+  box-shadow: 0 19px 38px rgba(0, 0, 0, 0.30), 0 15px 12px rgba(0, 0, 0, 0.22);
+  background: linear-gradient(#EB7070, #FFD782);
+}
+
+.card {
+  border: none;
+  box-shadow: 0px 2px 5px 0px rgba(0,0,0,0.3);
+}
+
+.logo {
+  height: 50px;
+}
+.icon{
+	width: 27px;
+}
+.icon-trash {
+  height: 20px;
+}
+
+.deleteBtn {
+  cursor: pointer;
+  display: none;
+  position: relative;
+  z-index: 2;
+}
+
+:root {
+  /* Change this to change the appearance of the hexagons */
+  --hex-width: 50px;
+  --hex-between: 10px;
+  /* Other hexagon dimentions */
+  --hex-height: calc(var(--hex-width) / 1.73/* sqrt(3) */
+  );
+  --hex-margin: calc(var(--hex-width) / 2);
+  --hex-border: calc(var(--hex-margin) / 1.73/* sqrt(3) */
+  );
+  --hex-transition: all .2s ease;
+  /* Colors */
+  --color-hex-default: #000000;
+  --color-hex-hover: #FFFFFF;
+}
+
+
+/* Hexagons */
+
+.hexagon-container {
+  display: grid;
+  grid-template-columns: var(--hex-width) var(--hex-width) var(--hex-width) var(--hex-width) var(--hex-width);
+  grid-auto-rows: calc(var(--hex-width) - 28.87px/2);
+  grid-gap: var(--hex-between) var(--hex-between);
+  padding-bottom: var(--hex-border);
+  margin-bottom: 20px;
+}
+
+.hexagon {
+  align-items: center;
+  background-color: var(--color-hex-default);
+  cursor: pointer;
+  display: flex;
+  color: white;
+  fill: white;
+  height: var(--hex-height);
+  justify-content: center;
+  margin: var(--hex-border) 0;
+  position: relative;
+  transition: var(--hex-transition);
+  width: var(--hex-width);
+}
+
+.hexagon::after,
+.hexagon::before {
+  border-left: var(--hex-margin) solid transparent;
+  border-right: var(--hex-margin) solid transparent;
+  content: "";
+  left: 0;
+  position: absolute;
+  transition: var(--hex-transition);
+  width: 0;
+}
+
+.hexagon::after {
+  border-top: var(--hex-border) solid var(--color-hex-default);
+  top: 100%;
+  width: 0;
+}
+
+.hexagon::before {
+  border-bottom: var(--hex-border) solid var(--color-hex-default);
+  bottom: 100%;
+}
+
+.hexagon:hover {
+  background-color: var(--color-hex-hover);
+  color: black;
+}
+
+.hexagon:hover::after,
+.hexagon:hover::before {
+  border-top-color: var(--color-hex-hover);
+  border-bottom-color: var(--color-hex-hover);
+}
+
+.hexagon:nth-child(10n+6),
+.hexagon:nth-child(10n+7),
+.hexagon:nth-child(10n+8),
+.hexagon:nth-child(10n+9),
+.hexagon:nth-child(10n+10) {
+  margin-left: calc(var(--hex-width) / 2 + var(--hex-between) / 2);
+}
