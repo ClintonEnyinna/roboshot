@@ -171,8 +171,6 @@ function AppViewModel() {
         this.hexagon.push(new hex(i))
     }
 
-    this.ingList = [];
-
     ko.track(this);
 }
 
