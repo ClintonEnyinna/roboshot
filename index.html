@@ -57,10 +57,10 @@
         <div class="row" data-bind="foreach: cards">
             <div class="col-sm-4 my-sm-2">
                 <div id="card" class="card mb-4 mb-sm-1">
-                    <img class="card-img-top" data-bind="attr: {src: image}" style="max-height: 400px;" src="" alt="Card image cap">
+                    <img class="card-img-top" data-bind="attr: {src: image}" style="max-height: 400px;" alt="Card image cap">
                     <div class="card-body">
                         <h5 class="card-title" data-bind="text: name"></h5>
-                        <span class="price" data-bind="text: '$' + price"></span>
+                        <span class="price" data-bind="text: price"></span>
                         <p class="card-text text-muted" data-bind="text: ingredients"></p>
                         <div class=text-center>
                             <button class="btn pedir" data-bind="click: $parent.drinkOrdered">Pedir</button>
@@ -108,14 +108,14 @@
                                 </div>
                                 <div class="col-6">
                                     <div class="field pb-2">
-                                        <span class="input-number-decrement">–</span><input class="ing-list" type="text" data-bind="attr: { id: $data.name }"><span class="input-number-increment">+</span>
+                                        <span class="input-number-decrement" data-bind="click: $parent.removeIngredient">–</span><input class="ing-list" type="text" data-bind="attr: { id: $data.name }, event: { keyup: $parent.addIngFromInput }"><span class="input-number-increment" data-bind="click: $parent.addIngredient">+</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="drink-name">Precio</label>
-                            <input type="text" class="form-control" id="drink-price" placeholder="$" required>
+                            <div id="drink-price" data-bind="text: '$' + drinkGrandTotal"></div>
                         </div>
                     </form>
                 </div>
@@ -257,7 +257,7 @@
                         <tfoot>
                             <tr>
                                 <th colspan="2">Total ($) :</th>
-                                <td data-bind="text: grandTotal"></td>
+                                <td data-bind="text: salesGrandTotal"></td>
                             </tr>
                         </tfoot>
                     </table>

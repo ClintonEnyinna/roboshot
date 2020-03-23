@@ -16,6 +16,7 @@ let folderName = path.join(app.getPath('userData'), 'roboshotData'),
 
 let pos,
     ingds,
+    totalPrice = 0,
     folio = 1000,
     imgFolderPath = "",
     user = false;
@@ -29,7 +30,7 @@ function drink(name, ingredients, price, description, image) {
     this.ingredients = ingredients;
     this.price = price;
     this.description = description;
-    this.image = image;
+    this.image = image || "img/camera.jpg";
 
     ko.track(this);
 }
@@ -52,6 +53,13 @@ function sales(name, quantity, price) {
     ko.track(this);
 }
 
+function drinkPrice(name, price) {
+    this.name = name;
+    this.price = price;
+
+    ko.track(this);
+}
+
 function hex(num) {
     this.num = num;
 }
@@ -61,7 +69,7 @@ function AppViewModel() {
 
     this.addCard = function() {
         if ($("#drink-name").val() != "" && ingds != "") {
-            this.cards.push(new drink(`${$("#drink-name").val()}`, ingds, `${$("#drink-price").val()}`, `${$("#drink-description").val()}`, imgFolderPath));
+            this.cards.push(new drink(`${$("#drink-name").val()}`, ingds, `${$("#drink-price").text()}`, `${$("#drink-description").val()}`, imgFolderPath));
             console.log(this.cards)
             if (user) $(".deleteBtn").css("display", "inline-block");
         }
@@ -75,6 +83,7 @@ function AppViewModel() {
             });
         }
         imgFolderPath = "";
+        this.drinkPrices = [];
     }
 
     this.removeCard = card => {
@@ -129,9 +138,83 @@ function AppViewModel() {
         }
     }
 
-    ko.defineProperty(this, 'grandTotal', function() {
+    this.drinkPrices = [];
+
+    this.addIngFromInput = (ingredient, event) => {
+        el = $(event.target)
+        value = el.val();
+        if (value == "") value = 0;
+
+        if (this.drinkPrices != 0) {
+            let match = this.drinkPrices.some(drink => {
+                if (drink.name === ingredient.name) {
+                    drink.price = ingredient.price * value / 10;
+                    return true
+                }
+            });
+            if (!match) {
+                this.drinkPrices.push(new drinkPrice(ingredient.name, value * ingredient.price/10));
+            }
+        } else {
+            this.drinkPrices.push(new drinkPrice(ingredient.name, value * ingredient.price/10));
+        }
+        return true;
+    }
+
+    this.addIngredient = (ingredient, event) => {
+        self = $(event.target)
+
+        var el = self.prev();
+
+        var value = el.val();
+        value = Number(value) + 10;
+        el.val(value);
+
+        if (this.drinkPrices != 0) {
+            let match = this.drinkPrices.some(drink => {
+                if (drink.name === ingredient.name) {
+                    drink.price = ingredient.price * value / 10;
+                    return true
+                }
+            });
+            if (!match) {
+                this.drinkPrices.push(new drinkPrice(ingredient.name, ingredient.price));
+            }
+        } else {
+            this.drinkPrices.push(new drinkPrice(ingredient.name, ingredient.price));
+        }
+    }
+
+    this.removeIngredient = (ingredient, event) => {
+        self = $(event.target)
+
+        var el = self.next();
+
+        var value = el.val();
+        value = Number(value) - 10;
+        if (value <= 0) {
+            value = "";
+        }
+        el.val(value);
+
+        if (this.drinkPrices != 0) {
+            this.drinkPrices.some(drink => {
+                if (drink.name === ingredient.name) {
+                    drink.price = ingredient.price * value/10;
+                }
+            })
+        }
+    }
+
+    ko.defineProperty(this, 'salesGrandTotal', function() {
         let total = 0;
         this.sales.forEach(sale => total += Number(sale.price));
+        return total;
+    });
+
+    ko.defineProperty(this, 'drinkGrandTotal', function() {
+        let total = 0;
+        this.drinkPrices.forEach(drink => total += Number(drink.price));
         return total;
     });
 
@@ -317,6 +400,7 @@ window.addEventListener('DOMContentLoaded', function(event) {
     //clears modal content on close
     $('#newRecipe').on('hidden.bs.modal', function() {
         $(this).find('form').trigger('reset');
+        totalPrice = 0;
     });
 
     $(".hexagon-container").on("click", (event) => {
@@ -347,32 +431,8 @@ window.addEventListener('DOMContentLoaded', function(event) {
             }
         });
         ingds = ingds.join(", ");
+        $(".image-name").text("");
     });
-
-    $(".input-fields").on("click",  '.input-number-increment', function(){
-        var el = $(this).prev();
-        increment(el)
-    });
-
-    $(".input-fields").on("click",  '.input-number-decrement', function(){
-        var el = $(this).next();
-        decrement(el)
-    });
-
-    function decrement(el) {
-        var value = el.val();
-        value = Number(value) - 10;
-        if (value <= 0) {
-            value = "";
-        }
-        el.val(value);
-    }
-
-    function increment(el) {
-        var value = el.val();
-        value = Number(value) + 10;
-        el.val(value);
-    }
 
     fs.readFile(cardFile, (err, data) => {
         if (err) {
