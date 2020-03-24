@@ -16,6 +16,7 @@ let folderName = path.join(app.getPath('userData'), 'roboshotData'),
 
 let pos,
     ingds,
+    quantityPerCup,
     totalPrice = 0,
     folio = 1000,
     imgFolderPath = "",
@@ -25,9 +26,10 @@ fs.mkdir(folderName, err => {
     if (err && err.code != 'EEXIST') throw 'up'
 });
 
-function drink(name, ingredients, price, description, image) {
+function drink(name, ingredients, quantityPerCup, price, description, image) {
     this.name = name;
     this.ingredients = ingredients;
+    this.quantityPerCup = quantityPerCup;
     this.price = price;
     this.description = description;
     this.image = image || "img/camera.jpg";
@@ -69,7 +71,7 @@ function AppViewModel() {
 
     this.addCard = function() {
         if ($("#drink-name").val() != "" && ingds != "") {
-            this.cards.push(new drink(`${$("#drink-name").val()}`, ingds, `${$("#drink-price").text()}`, `${$("#drink-description").val()}`, imgFolderPath));
+            this.cards.push(new drink(`${$("#drink-name").val()}`, ingds, quantityPerCup, `${$("#drink-price").text()}`, `${$("#drink-description").val()}`, imgFolderPath));
             console.log(this.cards)
             if (user) $(".deleteBtn").css("display", "inline-block");
         }
@@ -119,18 +121,27 @@ function AppViewModel() {
         let nameWithPos = [];
         if (card.ingredients.length != 0 && this.ingredients.length != 0) {
 
-            let bottles = card.ingredients.split(", ");
-
-            bottles.forEach(element => {
+            card.quantityPerCup.forEach(element => {
                 this.ingredients.forEach(item => {
-                    if (element == item.name) {
+                    if (Object.keys(element)[0] == item.name) {
                         data = {
                             name: item.name,
+                            quantity: element[item.name],
                             pos: item.pos
                         }
                         nameWithPos.push(data);
+
+                        item.level = (item.level - element[item.name]).toString();
+                        if (viewModel.ingredients.length > 0) {
+                            let ingdData = JSON.stringify(viewModel.ingredients);
+                            fs.writeFile(ingdFile, ingdData, (err) => {
+                                if (err) {
+                                    return console.log(err)
+                                }
+                            });
+                        }
                     }
-                })
+                });
             });
             console.log(nameWithPos);
             ipc.send("drink-ordered", { num: folio, drink: card.name });
@@ -184,7 +195,7 @@ function AppViewModel() {
             this.drinkPrices.push(new drinkPrice(ingredient.name, ingredient.price));
         }
     }
-
+          
     this.removeIngredient = (ingredient, event) => {
         self = $(event.target)
 
@@ -399,7 +410,7 @@ window.addEventListener('DOMContentLoaded', function(event) {
 
     //clears modal content on close
     $('#newRecipe').on('hidden.bs.modal', function() {
-        $(this).find('form').trigger('reset');
+        $(this).find("input,textarea").val('').end()
         totalPrice = 0;
     });
 
@@ -424,10 +435,14 @@ window.addEventListener('DOMContentLoaded', function(event) {
 
     $('#add').on('click', _ => {
         ingds = [];
+        quantityPerCup = [];
 
         $('.ing-list').each(function(index, value) {
             if (this.value != "") {
                 ingds.push(this.id)
+                data = {}
+                data[this.id] = this.value;
+                quantityPerCup.push(data);
             }
         });
         ingds = ingds.join(", ");
@@ -452,8 +467,9 @@ window.addEventListener('DOMContentLoaded', function(event) {
         let storedData = JSON.parse(data);
 
         storedData.forEach(element => {
-            viewModel.ingredients.push(element)
+            viewModel.ingredients.push(new ingredient(element.pos, element.name, element.price, element.level))
         });
+        console.log(viewModel.ingredients)
     });
 
     ipc.on('app-close', _ => {

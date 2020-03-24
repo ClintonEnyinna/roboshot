@@ -86,22 +86,17 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <div>
                         <div class="form-group">
-                            <label for="drink-name">Bebida</label>
-                            <input type="text" class="form-control" id="drink-name" placeholder="Mojito" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="drink-description">Descripcion</label>
-                            <textarea rows="2" class="form-control" id="drink-description" placeholder="" required></textarea>
-                        </div>
-                        <div class="form-group">
-                            <input type="button" class="upload-image" value="Upload Image">
+                            <button class="btn btn-outline-info upload-image">Upload Image</button>
                             <span class="image-name"></span>
                         </div>
                         <div class="form-group">
-                            <label for="ingredients" class="col-form-label">Ingredientes:</label>
-                            <!-- Default inline 1-->
+                            <label class="primaryText" for="drink-name">Bebida</label>
+                            <input type="text" class="form-control" id="drink-name" placeholder="Mojito">
+                        </div>
+                        <div class="form-group">
+                            <label for="ingredients" class="col-form-label primaryText">Ingredientes:</label>
                             <div class="row input-fields" data-bind="foreach: ingredients">
                                 <div class="col-6" >
                                     <div data-bind="text: name"></div>
@@ -114,10 +109,14 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="drink-name">Precio</label>
-                            <div id="drink-price" data-bind="text: '$' + drinkGrandTotal"></div>
+                            <label class="primaryText" for="drink-name">Precio:</label>
+                            <span class="text-success" id="drink-price" data-bind="text: '$' + drinkGrandTotal"></span>
                         </div>
-                    </form>
+                        <div class="form-group">
+                            <label class="primaryText" for="drink-description">Descripción</label>
+                            <textarea rows="2" class="form-control" id="drink-description"></textarea>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <!-- <button class="btn btn-secondary" data-dismiss="modal">Close</button> -->

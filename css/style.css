@@ -32,6 +32,16 @@ nav ul{
   z-index: 2;
 }
 
+.modal-title{
+  color: #272343;
+  font-weight: 550;
+}
+
+.primaryText {
+  color: #272343;
+  font-size: 18px;
+}
+
 .infoBtn{
   margin: 0 auto;
   color: white;
