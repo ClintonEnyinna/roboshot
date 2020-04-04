@@ -6,8 +6,8 @@ const authenticate = require('password-hash'),
     remote = electron.remote,
     app = remote.app,
     ipc = electron.ipcRenderer,
-    serialPort = require('serialport');
-Readline = require('@serialport/parser-readline');
+    serialPort = require('serialport'),
+    Readline = require('@serialport/parser-readline');
 
 let folderName = path.join(app.getPath('userData'), 'roboshotData'),
     ingdFile = path.join(folderName, 'ingredientes.txt'),
@@ -20,7 +20,8 @@ let pos,
     totalPrice = 0,
     folio = 1000,
     imgFolderPath = "",
-    user = false;
+    user = false,
+    mySerial;
 
 fs.mkdir(folderName, err => {
     if (err && err.code != 'EEXIST') throw 'up'
@@ -145,6 +146,7 @@ function AppViewModel() {
             });
             console.log(nameWithPos);
             ipc.send("drink-ordered", { num: folio, drink: card.name });
+            mySerial.write("bebida 1\n");
             folio += 1;
         }
     }
@@ -277,7 +279,7 @@ function availablePorts() {
                     foundPort = true
 
                     function connect(newSerial) {
-                        var mySerial = newSerial;
+                        mySerial = newSerial;
                         console.log(mySerial);
                         mySerial = new serialPort(port.path, {
                             baudRate: 115200
@@ -286,7 +288,7 @@ function availablePorts() {
                         mySerial.on('open', _ => {
                             console.log('Serial started')
                             parser.on('data', console.log)
-                            mySerial.write("connected")
+                            // mySerial.write("hello\nworld\n")
                         });
 
                         mySerial.on('close', _ => {
