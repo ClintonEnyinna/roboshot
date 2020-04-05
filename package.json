@@ -21,6 +21,7 @@
     "password-hash": "^1.2.2",
     "path": "^0.12.7",
     "popper.js": "^1.15.0",
+    "python-shell": "^1.0.8",
     "serialport": "^8.0.5"
   }
 }
