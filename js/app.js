@@ -147,15 +147,30 @@ function AppViewModel() {
                 });
             });
             ipc.send("drink-ordered", { num: folio, drink: card.name });
-            (async function() {
-                master.write("from master\n")
-                await sleep(1000)
-                slave.write("from slave\n")
-            })();
-            PythonShell.runString('x=1+1;print(x)', null, function(err, result) {
-                if (err) throw err;
-                console.log(result);
-            });
+            // (async function() {
+            //     master.write("from master\n")
+            //     await sleep(1000)
+            //     slave.write("from slave\n")
+            // })();
+            
+            orderTest(card.name)
+            // runPython(card.name)
+
+            function runPython(drink) {
+                var pyshell = new PythonShell('script.py');
+                pyshell.send(drink);
+
+                pyshell.on('message', function(message) {
+                    console.log(message);
+                    if (message == "end") {
+                        pyshell.end(function(err, code, signal) {
+                            if (err) throw err;
+                            console.log('finished');
+                        });
+                    }
+                });
+            }
+
             folio += 1;
         }
     }
@@ -319,7 +334,7 @@ function availablePorts() {
                 } else if (data == "slave") {
                     slave = window['arduino_mega' + i];
                 } else {
-                    console.log(data)
+                    // console.log(data)
                 }
             });
         });
@@ -356,7 +371,7 @@ async function orderTest(drink) {
     if (drink == 1) {
 
         console.log(`Bebida : ${drink}`)
-        await sleep(10000);
+        // await sleep(10000);
 
         master.drain()
             // Buffer.from('hello world', 'utf8')
@@ -541,8 +556,8 @@ async function orderTest(drink) {
         console.log("1A")
 
 
-    } else if (nombre == 2) {
-        console.log(`Bebida : ${nombre}`)
+    } else if (drink == 2) {
+        console.log(`Bebida : ${drink}`)
             //await sleep(10000);(10)
 
         master.drain()
