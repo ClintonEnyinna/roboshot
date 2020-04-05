@@ -7,7 +7,9 @@ const authenticate = require('password-hash'),
     app = remote.app,
     ipc = electron.ipcRenderer,
     serialPort = require('serialport'),
-    Readline = require('@serialport/parser-readline');
+    Readline = require('@serialport/parser-readline'),
+    sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs)),
+    { PythonShell } = require('python-shell');
 
 let folderName = path.join(app.getPath('userData'), 'roboshotData'),
     ingdFile = path.join(folderName, 'ingredientes.txt'),
@@ -21,7 +23,8 @@ let pos,
     folio = 1000,
     imgFolderPath = "",
     user = false,
-    mySerial;
+    slave,
+    master;
 
 fs.mkdir(folderName, err => {
     if (err && err.code != 'EEXIST') throw 'up'
@@ -108,7 +111,6 @@ function AppViewModel() {
                 if (sale.name === card.name) {
                     sale.quantity++;
                     sale.price = Number(sale.price) + Number(card.price);
-                    console.log(typeof sale.price)
                     return true
                 }
             });
@@ -144,9 +146,16 @@ function AppViewModel() {
                     }
                 });
             });
-            console.log(nameWithPos);
             ipc.send("drink-ordered", { num: folio, drink: card.name });
-            mySerial.write("bebida 1\n");
+            (async function() {
+                master.write("from master\n")
+                await sleep(1000)
+                slave.write("from slave\n")
+            })();
+            PythonShell.runString('x=1+1;print(x)', null, function(err, result) {
+                if (err) throw err;
+                console.log(result);
+            });
             folio += 1;
         }
     }
@@ -166,10 +175,10 @@ function AppViewModel() {
                 }
             });
             if (!match) {
-                this.drinkPrices.push(new drinkPrice(ingredient.name, value * ingredient.price/10));
+                this.drinkPrices.push(new drinkPrice(ingredient.name, value * ingredient.price / 10));
             }
         } else {
-            this.drinkPrices.push(new drinkPrice(ingredient.name, value * ingredient.price/10));
+            this.drinkPrices.push(new drinkPrice(ingredient.name, value * ingredient.price / 10));
         }
         return true;
     }
@@ -197,7 +206,7 @@ function AppViewModel() {
             this.drinkPrices.push(new drinkPrice(ingredient.name, ingredient.price));
         }
     }
-          
+
     this.removeIngredient = (ingredient, event) => {
         self = $(event.target)
 
@@ -213,7 +222,7 @@ function AppViewModel() {
         if (this.drinkPrices != 0) {
             this.drinkPrices.some(drink => {
                 if (drink.name === ingredient.name) {
-                    drink.price = ingredient.price * value/10;
+                    drink.price = ingredient.price * value / 10;
                 }
             })
         }
@@ -274,41 +283,13 @@ function availablePorts() {
     serialPort.list().then(ports => {
         if (ports.length > 0) {
             let foundPort = false;
+            let num = 1;
             for (let port of ports) {
+                // console.log(port)
                 if (port.manufacturer.includes('Silicon')) {
                     foundPort = true
-
-                    function connect(newSerial) {
-                        mySerial = newSerial;
-                        console.log(mySerial);
-                        mySerial = new serialPort(port.path, {
-                            baudRate: 115200
-                        });
-                        var parser = mySerial.pipe(new Readline())
-                        mySerial.on('open', _ => {
-                            console.log('Serial started')
-                            parser.on('data', console.log)
-                            // mySerial.write("hello\nworld\n")
-                        });
-
-                        mySerial.on('close', _ => {
-                            console.log('closed');
-                            reconnect();
-                        });
-                        mySerial.on('error', function(err) {
-                            console.log('Error: ', err.message);
-                            reconnect();
-                        });
-                    }
-
-                    function reconnect() {
-                        console.log('Iniciating Reconnect');
-                        setTimeout(function() {
-                            console.log('Reconnecting to Esp');
-                            connect();
-                        }, 2000);
-                    };
-                    connect(port.path);
+                    connect(port.path, num);
+                    num++;
                 }
             }
             if (foundPort == false) {
@@ -320,6 +301,431 @@ function availablePorts() {
     }).catch(err => {
         console.log(err)
     });
+
+    function connect(port, i) {
+        window['arduino_mega' + i] = new serialPort(port, {
+            baudRate: 115200
+        });
+
+        var parser = window['arduino_mega' + i].pipe(new Readline())
+        window['arduino_mega' + i].on('open', _ => {
+            console.log('Serial started');
+            if (master == undefined || slave == undefined) {
+                window['arduino_mega' + i].write("connected\n")
+            }
+            parser.on('data', function(data) {
+                if (data == "master") {
+                    master = window['arduino_mega' + i];
+                } else if (data == "slave") {
+                    slave = window['arduino_mega' + i];
+                } else {
+                    console.log(data)
+                }
+            });
+        });
+
+        window['arduino_mega' + i].on('close', _ => {
+            console.log('closed');
+            if (master == window['arduino_mega' + i]) {
+                console.log("here")
+                master = undefined;
+            } else {
+                slave = undefined;
+            }
+            reconnect(port, i);
+        });
+        window['arduino_mega' + i].on('error', function(err) {
+            console.log('Error: ', err.message);
+            reconnect(port, i);
+        });
+    }
+
+    function reconnect(port, i) {
+        console.log('Iniciating Reconnect');
+        setTimeout(function() {
+            console.log('Reconnecting to Esp');
+            connect(port, i);
+        }, 2000);
+    };
+}
+
+async function orderTest(drink) {
+    master.flush()
+    slave.flush()
+
+    if (drink == 1) {
+
+        console.log(`Bebida : ${drink}`)
+        await sleep(10000);
+
+        master.drain()
+            // Buffer.from('hello world', 'utf8')
+        VarCuaTxt2_c = Buffer.from("qa\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("1a")
+
+        await sleep(5000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("1\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("1b")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("qc\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("1c")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("qd\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("1d")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("qe\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("1e")
+
+        await sleep(5000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("1000001\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("1f")
+
+        await sleep(5000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("1000000\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("1g")
+
+        await sleep(3000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("qh\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("1h")
+
+        await sleep(3000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("qi\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("1i")
+
+        await sleep(5000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("100001\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("1j")
+
+        await sleep(5000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("100000\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("1k")
+
+        await sleep(3000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("ql\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("1l")
+
+        await sleep(3000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("qm\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("1m")
+
+        await sleep(5000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("10001\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("1n")
+
+        await sleep(5000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("10000\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("1o")
+
+        await sleep(3000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("qp\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("1p")
+
+        await sleep(3000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("qq\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("1q")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("qr\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("1r")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("qt\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("1t")
+
+        await sleep(5000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("0\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("1u")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("qv\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("1v")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("qw\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("1w")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("qx\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("1x")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("qy\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("1y")
+
+        await sleep(9000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("001\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("1z")
+
+        await sleep(3000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("000\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("1A")
+
+
+    } else if (nombre == 2) {
+        console.log(`Bebida : ${nombre}`)
+            //await sleep(10000);(10)
+
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("wa\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("2a")
+
+        await sleep(5000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("1\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("2b")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("wc\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("2c")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("wd\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("2d")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("we\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("2e")
+
+        await sleep(5000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("1000001\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("2f")
+
+        await sleep(5000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("1000000\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("2g")
+
+        await sleep(3000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("wh\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("2h")
+
+        await sleep(3000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("wi\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("2i")
+
+        await sleep(5000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("100001\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("2j")
+
+        await sleep(5000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("100000\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("2k")
+
+        await sleep(3000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("wl\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("2l")
+
+        await sleep(3000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("wm\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("2m")
+
+        await sleep(5000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("10001\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("2n")
+
+        await sleep(5000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("10000\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("2o")
+
+        await sleep(3000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("wp\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("2p")
+
+        await sleep(3000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("wq\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("2q")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("wr\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("2r")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("wt\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("2t")
+
+        await sleep(5000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("0\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("2u")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("wv\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("2v")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("ww\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("2w")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("wx\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("2x")
+
+        await sleep(5000);
+        master.drain()
+        VarCuaTxt2_c = Buffer.from("wy\n")
+        master.write(VarCuaTxt2_c)
+        master.drain()
+        console.log("2y")
+
+        await sleep(9000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("001\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("2z")
+
+        await sleep(3000);
+        slave.drain()
+        VarCuaTxt2_c = Buffer.from("000\n")
+        slave.write(VarCuaTxt2_c)
+        slave.drain()
+        console.log("2A")
+    }
 }
 
 //upload image
@@ -471,7 +877,6 @@ window.addEventListener('DOMContentLoaded', function(event) {
         storedData.forEach(element => {
             viewModel.ingredients.push(new ingredient(element.pos, element.name, element.price, element.level))
         });
-        console.log(viewModel.ingredients)
     });
 
     ipc.on('app-close', _ => {
