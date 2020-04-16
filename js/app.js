@@ -292,13 +292,14 @@ function availablePorts() {
     serialPort.list().then(ports => {
         if (ports.length > 0) {
             let foundPort = false;
-            let num = 1;
             for (let port of ports) {
                 console.log(port)
-                if (port.manufacturer.includes('x')) {
+                if (port.manufacturer.includes('arduino')) {
                     foundPort = true
-                    connect(port.path, num);
-                    num++;
+                    connect(port.path, 'slave');
+                }else if(port.manufacturer.includes('wch')){
+                    foundPort = true
+                    connect(port.path, 'master');
                 }
             }
             if (foundPort == false) {
@@ -311,7 +312,44 @@ function availablePorts() {
         console.log(err)
     });
 
-    function connect(port, i) {
+    function connect(port, make) {
+        window['arduino_' + make] = new serialPort(port, {
+            baudRate: 9600
+        });
+
+        var parser = window['arduino_' + make].pipe(new Readline())
+        window['arduino_' + make].on('open', _ => {
+            console.log('Serial started');
+            if (master == undefined || slave == undefined) {
+                window['arduino_' + make].write("0")
+            }
+            parser.on('data', function(data) {
+                if (make == "master") {
+                    master = window['arduino_' + make];
+                } else if (make == "slave") {
+                    slave = window['arduino_' + make];
+                } else {
+                    console.log(data)
+                }
+            });
+        });
+
+        window['arduino_' + make].on('close', _ => {
+            console.log('closed');
+            if (master == window['arduino_' + make]) {
+                master = undefined;
+            } else {
+                slave = undefined;
+            }
+            reconnect(port, i);
+        });
+        window['arduino_' + make].on('error', function(err) {
+            console.log('Error: ', err.message);
+            reconnect(port, i);
+        });
+    }
+
+    /* function connect(port, i) {
         window['arduino_mega' + i] = new serialPort(port, {
             baudRate: 9600
         });
@@ -348,7 +386,7 @@ function availablePorts() {
             console.log('Error: ', err.message);
             reconnect(port, i);
         });
-    }
+    } */
 
     function reconnect(port, i) {
         console.log('Iniciating Reconnect');
