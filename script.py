@@ -1,8 +1,8 @@
 import serial, time, sys
-ARDUINO_port = serial.Serial('COM17', 115200)
+ARDUINO_port = serial.Serial('COM16', 115200)
 ARDUINO_port.flushInput()
 #time.sleep(2)
-ARDUINO2 = serial.Serial('COM3', 115200)
+ARDUINO2 = serial.Serial('COM13', 115200)
 ARDUINO2.flushInput()
 ########    VARIABLES GLOBALES  ################
 print("¿Ingrese bebida?")
@@ -12,7 +12,7 @@ print(nombre, flush=True)
 if nombre == 1:
 
    print(f"Bebida : {nombre}", flush=True)
-   #time.sleep(10)
+   time.sleep(5)
 
    ARDUINO2.reset_input_buffer()
    VarCuaTxt2_c = bytes("qa", 'utf-8')
@@ -194,12 +194,11 @@ if nombre == 1:
    ARDUINO_port.write(VarCuaTxt2_c)
    ARDUINO_port.reset_input_buffer()
    print("1A", flush=True)
-   print("end", flush=True)
 
 
 elif nombre == 2:
    print(f"Bebida : {nombre}", flush=True)
-   #time.sleep(10)
+   time.sleep(5)
 
    ARDUINO2.reset_input_buffer()
    VarCuaTxt2_c = bytes("wa", 'utf-8')

@@ -153,8 +153,8 @@ function AppViewModel() {
             //     slave.write("from slave\n")
             // })();
             
-            orderTest(card.name)
-            // runPython(card.name)
+            //orderTest(card.name)
+            runPython(card.name)
 
             function runPython(drink) {
                 var pyshell = new PythonShell('script.py');
@@ -162,15 +162,15 @@ function AppViewModel() {
 
                 pyshell.on('message', function(message) {
                     console.log(message);
-                    if (message == "end") {
+                    /* if (message == "1A" || message == "2A") {
                         pyshell.end(function(err, code, signal) {
                             if (err) throw err;
                             console.log('finished');
                         });
-                    }
+                    } */
                 });
             }
-
+            
             folio += 1;
         }
     }
@@ -300,8 +300,8 @@ function availablePorts() {
             let foundPort = false;
             let num = 1;
             for (let port of ports) {
-                // console.log(port)
-                if (port.manufacturer.includes('Silicon')) {
+                console.log(port)
+                if (port.manufacturer.includes('x')) {
                     foundPort = true
                     connect(port.path, num);
                     num++;
@@ -319,22 +319,23 @@ function availablePorts() {
 
     function connect(port, i) {
         window['arduino_mega' + i] = new serialPort(port, {
-            baudRate: 115200
+            baudRate: 9600
         });
 
         var parser = window['arduino_mega' + i].pipe(new Readline())
         window['arduino_mega' + i].on('open', _ => {
             console.log('Serial started');
             if (master == undefined || slave == undefined) {
-                window['arduino_mega' + i].write("connected\n")
+                window['arduino_mega' + i].write("0")
             }
             parser.on('data', function(data) {
+                console.log(data)
                 if (data == "master") {
                     master = window['arduino_mega' + i];
                 } else if (data == "slave") {
                     slave = window['arduino_mega' + i];
                 } else {
-                    // console.log(data)
+                    console.log(data)
                 }
             });
         });
