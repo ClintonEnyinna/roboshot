@@ -9,7 +9,8 @@ const authenticate = require('password-hash'),
     serialPort = require('serialport'),
     Readline = require('@serialport/parser-readline'),
     sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs)),
-    { PythonShell } = require('python-shell');
+    { PythonShell } = require('python-shell'),
+    pyshell = new PythonShell('script.py');
 
 let folderName = path.join(app.getPath('userData'), 'roboshotData'),
     ingdFile = path.join(folderName, 'ingredientes.txt'),
@@ -157,17 +158,10 @@ function AppViewModel() {
             runPython(card.name)
 
             function runPython(drink) {
-                var pyshell = new PythonShell('script.py');
                 pyshell.send(drink);
 
                 pyshell.on('message', function(message) {
                     console.log(message);
-                    /* if (message == "1A" || message == "2A") {
-                        pyshell.end(function(err, code, signal) {
-                            if (err) throw err;
-                            console.log('finished');
-                        });
-                    } */
                 });
             }
             
