@@ -9,8 +9,8 @@ const authenticate = require('password-hash'),
     serialPort = require('serialport'),
     Readline = require('@serialport/parser-readline'),
     sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs)),
-    { PythonShell } = require('python-shell'),
-    pyshell = new PythonShell('script.py');
+    { PythonShell } = require('python-shell');
+    // pyshell = new PythonShell('script.py');
 
 let folderName = path.join(app.getPath('userData'), 'roboshotData'),
     ingdFile = path.join(folderName, 'ingredientes.txt'),
@@ -153,9 +153,9 @@ function AppViewModel() {
             //     await sleep(1000)
             //     slave.write("from slave\n")
             // })();
-            
-            //orderTest(card.name)
-            runPython(card.name)
+
+            orderTest(card.name)
+            // runPython(card.name)
 
             function runPython(drink) {
                 pyshell.send(drink);
@@ -164,7 +164,7 @@ function AppViewModel() {
                     console.log(message);
                 });
             }
-            
+
             folio += 1;
         }
     }
@@ -296,10 +296,10 @@ function availablePorts() {
                 console.log(port)
                 if (port.manufacturer.includes('arduino')) {
                     foundPort = true
-                    connect(port.path, 'slave');
-                }else if(port.manufacturer.includes('wch')){
-                    foundPort = true
                     connect(port.path, 'master');
+                } else if (port.manufacturer.includes('wch')) {
+                    foundPort = true
+                    connect(port.path, 'slave');
                 }
             }
             if (foundPort == false) {
@@ -314,23 +314,21 @@ function availablePorts() {
 
     function connect(port, make) {
         window['arduino_' + make] = new serialPort(port, {
-            baudRate: 9600
+            baudRate: 115200
         });
 
         var parser = window['arduino_' + make].pipe(new Readline())
         window['arduino_' + make].on('open', _ => {
             console.log('Serial started');
             if (master == undefined || slave == undefined) {
-                window['arduino_' + make].write("0")
-            }
-            parser.on('data', function(data) {
                 if (make == "master") {
                     master = window['arduino_' + make];
                 } else if (make == "slave") {
                     slave = window['arduino_' + make];
-                } else {
-                    console.log(data)
                 }
+            }
+            parser.on('data', function(data) {
+                console.log(data)
             });
         });
 
@@ -341,58 +339,19 @@ function availablePorts() {
             } else {
                 slave = undefined;
             }
-            reconnect(port, i);
+            reconnect(port, make);
         });
         window['arduino_' + make].on('error', function(err) {
             console.log('Error: ', err.message);
-            reconnect(port, i);
+            reconnect(port, make);
         });
-    }
+    } 
 
-    /* function connect(port, i) {
-        window['arduino_mega' + i] = new serialPort(port, {
-            baudRate: 9600
-        });
-
-        var parser = window['arduino_mega' + i].pipe(new Readline())
-        window['arduino_mega' + i].on('open', _ => {
-            console.log('Serial started');
-            if (master == undefined || slave == undefined) {
-                window['arduino_mega' + i].write("0")
-            }
-            parser.on('data', function(data) {
-                console.log(data)
-                if (data == "master") {
-                    master = window['arduino_mega' + i];
-                } else if (data == "slave") {
-                    slave = window['arduino_mega' + i];
-                } else {
-                    console.log(data)
-                }
-            });
-        });
-
-        window['arduino_mega' + i].on('close', _ => {
-            console.log('closed');
-            if (master == window['arduino_mega' + i]) {
-                console.log("here")
-                master = undefined;
-            } else {
-                slave = undefined;
-            }
-            reconnect(port, i);
-        });
-        window['arduino_mega' + i].on('error', function(err) {
-            console.log('Error: ', err.message);
-            reconnect(port, i);
-        });
-    } */
-
-    function reconnect(port, i) {
+    function reconnect(port, make) {
         console.log('Iniciating Reconnect');
         setTimeout(function() {
             console.log('Reconnecting to Esp');
-            connect(port, i);
+            connect(port, make);
         }, 2000);
     };
 }
@@ -404,10 +363,9 @@ async function orderTest(drink) {
     if (drink == 1) {
 
         console.log(`Bebida : ${drink}`)
-        // await sleep(10000);
+        await sleep(10000);
 
         master.drain()
-            // Buffer.from('hello world', 'utf8')
         VarCuaTxt2_c = Buffer.from("qa\n")
         master.write(VarCuaTxt2_c)
         master.drain()

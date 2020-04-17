@@ -1,5 +1,5 @@
 import serial, time, sys
-ARDUINO_port = serial.Serial('COM16', 115200)
+ARDUINO_port = serial.Serial('COM7', 9600)
 ARDUINO_port.flushInput()
 #time.sleep(2)
 ARDUINO2 = serial.Serial('COM13', 115200)
