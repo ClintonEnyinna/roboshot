@@ -4,6 +4,7 @@ body {
   flex-direction: column;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   min-height: 100vh;
+  /* position: relative; */
   /* background-image: url('../img/roboshot-bg.jpg'); */
 }
 
@@ -12,24 +13,55 @@ nav ul{
 	display: flex;
 }
 
+.new-recipe{
+  position: fixed;
+  padding: 20px;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
 .price {
   position: absolute;
   top: 20px;
   right: 20px;
-  color: green;
+  background-color: #272343;
   font-size: large;
+  color: #fff;
+  border-radius: 50%;
+  height: 45px;
+  width: 45px;
+  line-height: 35px;
+  padding: 5px;
+  box-shadow: 0px 2px 5px 0px rgba(0,0,0,0.3);
 }
 
-.pedir {
-  width: 100px;
-  color: white;
-  font-size: 20px;
+.pedir,
+.new-recipe button {
   font-weight: 500;
   border: none;
   border-radius: 20px;
+  color: white;
   background: #272343;
+}
+
+.pedir {
+  font-size: 20px;
+  color: white;
+  width: 100px;
   position: relative;
   z-index: 2;
+  background: #272343;
+  background: #1c6e1c;
+}
+
+.new-recipe button{
+  font-size: 17px;
+  width: 200px;
+  padding: 5px 10px;
+  outline: none;
+  box-shadow: 0px 2px 5px 0px rgba(0,0,0,0.3);
 }
 
 .modal-title{
