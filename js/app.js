@@ -21,6 +21,8 @@ let folderName = path.join(app.getPath('userData'), 'roboshotData'),
 let pos,
   ingds,
   quantityPerCup,
+  customIngds,
+  customQntityPerCup,
   totalPrice = 0,
   folio = 1000,
   imgFolderPath = '',
@@ -87,7 +89,6 @@ function AppViewModel() {
           imgFolderPath
         )
       );
-      console.log(this.cards);
       if (user) $('.deleteBtn').css('display', 'inline-block');
     }
     if (viewModel.cards.length > 0) {
@@ -168,7 +169,35 @@ function AppViewModel() {
         });
       }
       folio += 1;
+      console.log(nameWithPos);
     }
+  };
+
+  this.customOrder = () => {
+    let customWithPos = [];
+    customQntityPerCup.forEach((element) => {
+      this.ingredients.forEach((item) => {
+        if (Object.keys(element)[0] == item.name) {
+          data = {
+            name: item.name,
+            quantity: element[item.name],
+            pos: item.pos,
+          };
+          customWithPos.push(data);
+
+          item.level = (item.level - element[item.name]).toString();
+          if (viewModel.ingredients.length > 0) {
+            let ingdData = JSON.stringify(viewModel.ingredients);
+            fs.writeFile(ingdFile, ingdData, (err) => {
+              if (err) {
+                return console.log(err);
+              }
+            });
+          }
+        }
+      });
+    });
+    console.log(customWithPos);
   };
 
   this.drinkPrices = [];
@@ -866,7 +895,7 @@ window.addEventListener('DOMContentLoaded', function (event) {
     ingds = [];
     quantityPerCup = [];
 
-    $('.ing-list').each(function (index, value) {
+    $('.ing-list').each(function () {
       if (this.value != '') {
         ingds.push(this.id);
         data = {};
@@ -876,6 +905,20 @@ window.addEventListener('DOMContentLoaded', function (event) {
     });
     ingds = ingds.join(', ');
     $('.image-name').text('');
+  });
+
+  $('#addCustom').on('click', (_) => {
+    customIngds = [];
+    customQntityPerCup = [];
+
+    $('.ing-list').each(function () {
+      if (this.value != '') {
+        customIngds.push(this.id);
+        data = {};
+        data[this.id] = this.value;
+        customQntityPerCup.push(data);
+      }
+    });
   });
 
   fs.readFile(cardFile, (err, data) => {
